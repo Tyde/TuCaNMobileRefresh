@@ -63,7 +63,7 @@ class TodayEventsFragment : Fragment() {
         model?.let {
             tempListView.adapter = TodayEventsListAdapter(this.context!!, it)
         }
-        model?.startOnStoredData()
+
 
         return view
     }

@@ -11,7 +11,7 @@
             android:layout_marginStart="16dp"
             android:textColor="@color/black"
             android:singleLine="false" app:layout_constraintTop_toBottomOf="@+id/senderTextView"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp" app:layout_constraintEnd_toEndOf="parent" android:layout_marginEnd="16dp"/>
     <TextView
             android:text="No Sender"
             android:layout_width="wrap_content"

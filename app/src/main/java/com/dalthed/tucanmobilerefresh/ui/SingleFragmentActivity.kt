@@ -52,7 +52,12 @@ class SingleFragmentActivity : AppCompatActivity() {
 
 
         val model = ViewModelProviders.of(this).get(MainMenuScraper::class.java)
-        model.addCookie(CredentialStore(this))
+
+        if(savedInstanceState==null){
+            model.addCookie(CredentialStore(this))
+            model.startOnStoredData()
+        }
+
         model.scraperData.observe(this, Observer {
             if (it?.todaysEvents?.size ?: 0 <= 2
                 && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
