@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TuCaNMobileRefresh</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">TU-ID</string>
+    <string name="prompt_password">Passwort</string>
+    <string name="action_sign_in">Anmelden</string>
+    <string name="login_failed">Login fehlgeschlagen</string>
+    <string name="login_no_internet">Keine Internetverbindung</string>
+    <string name="today_event_time">%1$s - %2$s</string>
+    <string name="error_no_data_todays_events">Fehler - Keine Daten zum Anzeigen (ADAPTER_ERROR_TODAY_EVENTS)</string>
+    <string name="login_failed_unkown_reason">Ein unbekannter Fehler ist aufgetreten (LOGIN_FAILED_UNKOWN_REASON).</string>
+    <string name="nav_vv">Vorlesungsverzeichnis</string>
+    <string name="nav_course_timetable">Studenplan</string>
+    <string name="nav_my_events">Veranstaltungen</string>
+    <string name="nav_exams">Prüfungen</string>
+    <string name="nav_messages">Nachrichten</string>
+    <string name="messages_fragment_title">Nachrichten</string>
+    <string name="todays_event_fragment_title">Heutige Veranstaltungen</string>
+
+</resources>

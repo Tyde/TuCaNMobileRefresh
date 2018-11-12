@@ -1,15 +1,25 @@
 <resources>
     <string name="app_name">TuCaNMobileRefresh</string>
     <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password (optional)</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-        completions."
+    <string name="prompt_email">TU-ID</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Log in</string>
+    <string name="login_failed">Login failed</string>
+    <string name="login_no_internet">No internet connection</string>
+
+
+    <string name="today_event_time">%1$s - %2$s</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="login_failed_unkown_reason">"An unknown error occurred (LOGIN_FAILED_UNKOWN_REASON). Please contact
+        the developer"
     </string>
+    <string name="error_no_data_todays_events">Error - no data to show (ADAPTER_ERROR_TODAY_EVENTS)</string>
+    <string name="nav_vv">Course catalogue</string>
+    <string name="nav_course_timetable">Timetable</string>
+    <string name="nav_my_events">My Events</string>
+    <string name="nav_exams">My Exams</string>
+    <string name="nav_messages">Messages</string>
+    <string name="messages_fragment_title">Messages</string>
+    <string name="todays_event_fragment_title">Today\'s Events</string>
 </resources>

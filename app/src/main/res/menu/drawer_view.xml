@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+                android:id="@+id/nav_vv"
+                android:icon="@drawable/ic_view_list_black_24dp"
+                android:title="@string/nav_vv"/>
+        <item
+                android:id="@+id/nav_course_timetable"
+                android:icon="@drawable/ic_date_range_black_24dp"
+                android:title="@string/nav_course_timetable"/>
+        <item
+                android:id="@+id/nav_my_courses"
+                android:icon="@drawable/ic_school_black_24dp"
+                android:title="@string/nav_my_events"/>
+        <item
+                android:id="@+id/nav_my_exams"
+                android:icon="@drawable/ic_book_black_24dp"
+                android:title="@string/nav_exams"/>
+        <item
+                android:id="@+id/nav_messages"
+                android:icon="@drawable/ic_chat_black_24dp"
+                android:title="@string/nav_messages"/>
+    </group>
+</menu>
