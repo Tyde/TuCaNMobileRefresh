@@ -14,11 +14,11 @@ data class SimpleCalendarEvent (val startingTime:LocalDateTime, val endingTime:L
 
 data class RoomCalendarEvent(val simpleEvent:SimpleCalendarEvent, val room:String)
 
-data class SimpleMessage(val sender:String, val title:String, val link:HttpUrl) {
+data class SimpleMessage(val sender:String, val title:String, val link:HttpUrl, val dateTime: LocalDateTime) {
     companion object {
         fun empty():SimpleMessage {
             val url = HttpUrl.Builder().host("wwww.tucan.tu-darmstadt.de").scheme("https").build()
-            return SimpleMessage("","empty message",url)
+            return SimpleMessage("","empty message",url, LocalDateTime.now())
         }
     }
 }

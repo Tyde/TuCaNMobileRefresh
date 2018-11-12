@@ -14,17 +14,15 @@ import android.widget.LinearLayout
 import com.dalthed.tucanmobilerefresh.R
 import com.dalthed.tucanmobilerefresh.scraper.MainMenuScraper
 import com.dalthed.tucanmobilerefresh.utils.CredentialStore
-import kotlinx.android.synthetic.main.activity_single_fragment.*
-import android.graphics.drawable.GradientDrawable
+import kotlinx.android.synthetic.main.activity_main_menu.*
 
 
-
-class SingleFragmentActivity : AppCompatActivity() {
+class MainMenuActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_single_fragment)
+        setContentView(R.layout.activity_main_menu)
         setSupportActionBar(toolbar)
         val actionBar = supportActionBar
         actionBar?.apply {

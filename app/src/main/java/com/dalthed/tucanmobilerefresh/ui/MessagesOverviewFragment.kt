@@ -19,6 +19,8 @@ import com.dalthed.tucanmobilerefresh.scraper.MainMenuScraper
 import com.dalthed.tucanmobilerefresh.scraper.SimpleMessage
 import kotlinx.android.synthetic.main.fragment_message_overview.*
 import kotlinx.android.synthetic.main.fragment_today_events.*
+import org.threeten.bp.format.DateTimeFormatter
+import org.w3c.dom.Text
 
 class MessagesOverviewFragment : Fragment() {
     private var model: MainMenuScraper? = null
@@ -59,15 +61,22 @@ class MessagesOverviewFragment : Fragment() {
 
 class MessagesListAdapter(val context:Context, val dataModel:MainMenuScraper) : BaseAdapter() {
     val inflater = LayoutInflater.from(context)
+    val dftime = DateTimeFormatter.ofPattern("HH:mm")
+    val dfdate = DateTimeFormatter.ofPattern("dd.MM.yy")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
         var outView = convertView ?: inflater.inflate(R.layout.message_list_element, parent, false)
         val titleView = outView.findViewById<TextView>(R.id.messageTitleTextView)
         val senderView = outView.findViewById<TextView>(R.id.senderTextView)
+        val dateView = outView.findViewById<TextView>(R.id.dateTextView)
+        val timeView = outView.findViewById<TextView>(R.id.timeTextView)
         val dataBase = dataModel.scraperData.value?.messages?.getOrNull(position)
         if (dataBase != null) {
             senderView.text = dataBase.sender
             titleView.text = dataBase.title
+            dateView.text = dfdate.format(dataBase.dateTime)
+            timeView.text = dftime.format(dataBase.dateTime)
         } else {
+
             titleView.text = context.getString(R.string.error_no_data_todays_events)
         }
         return outView

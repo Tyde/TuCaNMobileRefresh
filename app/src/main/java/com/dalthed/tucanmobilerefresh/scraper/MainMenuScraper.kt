@@ -10,6 +10,7 @@ import org.jsoup.nodes.Element
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.format.DateTimeFormatterBuilder
 import org.threeten.bp.format.TextStyle
 import java.io.IOException
 import java.util.*
@@ -151,15 +152,21 @@ class MainMenuScraper() : BaseScraperModel<MainMenuData>() {
     fun scrapeMessages(): List<SimpleMessage> {
         val rows = document?.select("table[summary=Eingegangene Nachrichten]")?.select("tr.tbdata")
         val returnList = mutableListOf<SimpleMessage>()
+        val df = DateTimeFormatterBuilder().appendPattern("dd.MM.yyyy HH:mm").toFormatter()
         rows?.forEach { row ->
             val cols = row.select("td")
+            val date = cols.getOrNull(0)?.text()
+            val time = cols.getOrNull(1)?.text()
+            val dateTime = if (date != null && time !=null) {
+                LocalDateTime.from(df.parse("$date $time"))
+            } else {null}
             val sender = cols.getOrNull(2)?.text()
             val title = cols.getOrNull(3)?.text()
             val linkString = cols.getOrNull(2)?.select("a")?.attr("href")?.let {
                 TuCanMobileRefresh.BASE_URL_NSL + it }
             val link = linkString?.let { HttpUrl.parse(it) }
-            if (sender!=null && title !=null && link != null){
-                returnList.add(SimpleMessage(sender,title,link))
+            if (sender!=null && title !=null && link != null && dateTime != null){
+                returnList.add(SimpleMessage(sender,title,link,dateTime))
             }
 
         }

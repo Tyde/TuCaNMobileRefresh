@@ -68,7 +68,7 @@ class LoginActivity : AppCompatActivity() {
                     credentialStore?.saveCredentials(tuIDStr, passwordStr)
                     credentialStore?.saveCookie(model?.client?.cookieJar() as TuCaNCookieJar)
                     credentialStore?.saveStartPageArg(model?.sessionArgument ?: "")
-                    val intent = Intent(this, SingleFragmentActivity::class.java)
+                    val intent = Intent(this, MainMenuActivity::class.java)
                     this.startActivity(intent)
                     //this.startAct
                     //switch to next activity
