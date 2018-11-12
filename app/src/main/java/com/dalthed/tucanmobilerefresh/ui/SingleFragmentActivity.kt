@@ -45,13 +45,18 @@ class SingleFragmentActivity : AppCompatActivity() {
             }
         })
 
-        val transaction = supportFragmentManager.beginTransaction()
-        val fragment: Fragment = TodayEventsFragment()
-        transaction.add(R.id.single_fragment_activity_container, fragment)
+        if (savedInstanceState == null) {
+            val transaction = supportFragmentManager.beginTransaction()
+            val fragment: Fragment = TodayEventsFragment()
+            transaction.add(R.id.single_fragment_activity_container, fragment)
 
-        val messagesFragment = MessagesOverviewFragment()
-        transaction.add(R.id.second_fragment_activity_container, messagesFragment)
-        transaction.commit()
+
+            val messagesFragment = MessagesOverviewFragment()
+            transaction.add(R.id.second_fragment_activity_container, messagesFragment)
+            transaction.commit()
+        } else {
+
+        }
 
 
         nav_view.setNavigationItemSelectedListener { item: MenuItem ->

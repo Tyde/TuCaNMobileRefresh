@@ -28,14 +28,17 @@ class MessagesOverviewFragment : Fragment() {
         model = activity?.run {
             ViewModelProviders.of(this).get(MainMenuScraper::class.java)
         }
-        model?.scraperData?.observe(this, Observer {
+
+    }
+
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        model?.scraperData?.observe(viewLifecycleOwner, Observer {
             Log.i(TuCanMobileRefresh.LOG_TAG, "notify change")
             (messagesListView?.adapter as MessagesListAdapter).notifyDataSetChanged()
         })
     }
-
-
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_message_overview, container, false)
         val tempListView = view.findViewById<ListView>(R.id.messagesListView)
@@ -45,6 +48,12 @@ class MessagesOverviewFragment : Fragment() {
         }
 
         return view
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TuCanMobileRefresh.LOG_TAG,"Destroy MOF")
+        //model?.scraperData?.remove
     }
 }
 

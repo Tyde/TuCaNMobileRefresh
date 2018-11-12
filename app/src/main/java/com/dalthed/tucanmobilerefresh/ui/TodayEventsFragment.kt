@@ -25,6 +25,8 @@ import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
 
 
+
+
 class TodayEventsFragment : Fragment() {
 
 
@@ -35,46 +37,19 @@ class TodayEventsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         model = activity?.run {
             ViewModelProviders.of(this).get(MainMenuScraper::class.java)
         }
 
 
 
-        model?.statusData?.observe(this, Observer {
-            when (it) {
-                ScraperState.LOADING -> {
-
-                }
-                ScraperState.FINISHED -> {
-                    /*
-                    Log.i(TuCanMobileRefresh.LOG_TAG, "Finished set, injecting fake events")
-                    val now = LocalDateTime.now()
-                    val then = now.plusHours(3)
-                    val url = HttpUrl.Builder().host("www.tucan.tu-darmstadt.de").scheme("https").build()
-                    model?.injectFakeEvent(SimpleCalendarEvent(now, then, "Was es halt zu tun gibt", url))
-                    model?.injectFakeEvent(SimpleCalendarEvent(then, then.plusHours(2), "Noch was?", url))*/
-                }
-
-            }
-        })
-        Log.i(TuCanMobileRefresh.LOG_TAG, "setting observer")
-        model?.scraperData?.observe(this, Observer {
-            Log.i(TuCanMobileRefresh.LOG_TAG, "notify change")
-            (todayEventListView?.adapter as TodayEventsListAdapter).notifyDataSetChanged()
-        })
-
-        model?.deepLoadingState?.observe(this, Observer {
-            when (it) {
-                DeepLoadingState.FINISHED -> {
-                    (todayEventListView?.adapter as TodayEventsListAdapter).switchDataSource()
-                    (todayEventListView?.adapter as TodayEventsListAdapter).notifyDataSetChanged()
-                }
-            }
-        })
-
 
     }
+
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -89,7 +64,50 @@ class TodayEventsFragment : Fragment() {
             tempListView.adapter = TodayEventsListAdapter(this.context!!, it)
         }
         model?.startOnStoredData()
+
         return view
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        model?.statusData?.observe(viewLifecycleOwner, Observer {
+            when (it) {
+                ScraperState.LOADING -> {
+
+                }
+                ScraperState.FINISHED -> {
+                    Log.i(TuCanMobileRefresh.LOG_TAG, "Finished set")
+                    /*
+                    Log.i(TuCanMobileRefresh.LOG_TAG, "Finished set, injecting fake events")
+                    val now = LocalDateTime.now()
+                    val then = now.plusHours(3)
+                    val url = HttpUrl.Builder().host("www.tucan.tu-darmstadt.de").scheme("https").build()
+                    model?.injectFakeEvent(SimpleCalendarEvent(now, then, "Was es halt zu tun gibt", url))
+                    model?.injectFakeEvent(SimpleCalendarEvent(then, then.plusHours(2), "Noch was?", url))*/
+                }
+
+            }
+        })
+        Log.i(TuCanMobileRefresh.LOG_TAG, "setting observer")
+        model?.scraperData?.observe(viewLifecycleOwner, Observer {
+            Log.i(TuCanMobileRefresh.LOG_TAG, "notify change")
+            (todayEventListView?.adapter as TodayEventsListAdapter).notifyDataSetChanged()
+        })
+
+        model?.deepLoadingState?.observe(viewLifecycleOwner, Observer {
+            when (it) {
+                DeepLoadingState.FINISHED -> {
+                    (todayEventListView?.adapter as TodayEventsListAdapter).switchDataSource()
+                    (todayEventListView?.adapter as TodayEventsListAdapter).notifyDataSetChanged()
+                }
+            }
+        })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TuCanMobileRefresh.LOG_TAG,"Destroy TEF")
+
     }
 
 }
