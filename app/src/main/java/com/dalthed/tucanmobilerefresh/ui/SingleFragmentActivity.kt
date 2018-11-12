@@ -3,20 +3,21 @@ package com.dalthed.tucanmobilerefresh.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.res.Configuration
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v4.view.GravityCompat
-
-
 import android.support.v7.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ListPopupWindow
 import com.dalthed.tucanmobilerefresh.R
 import com.dalthed.tucanmobilerefresh.scraper.MainMenuScraper
 import com.dalthed.tucanmobilerefresh.utils.CredentialStore
 import kotlinx.android.synthetic.main.activity_single_fragment.*
+import android.graphics.drawable.GradientDrawable
+
+
 
 class SingleFragmentActivity : AppCompatActivity() {
 
@@ -32,10 +33,29 @@ class SingleFragmentActivity : AppCompatActivity() {
         }
 
 
+        when (resources.configuration.orientation) {
+            Configuration.ORIENTATION_LANDSCAPE -> {
+                single_fragment_activity_layout.orientation = LinearLayout.HORIZONTAL
+                single_fragment_activity_container.layoutParams = LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.MATCH_PARENT,1f
+                )
+                second_fragment_activity_container.layoutParams = LinearLayout.LayoutParams(
+                    0, ViewGroup.LayoutParams.MATCH_PARENT,1f
+                )
+                single_fragment_activity_container.requestLayout()
+                second_fragment_activity_container.requestLayout()
+            }
+            else -> {
+                single_fragment_activity_layout.orientation = LinearLayout.VERTICAL
+            }
+        }
+
+
         val model = ViewModelProviders.of(this).get(MainMenuScraper::class.java)
         model.addCookie(CredentialStore(this))
         model.scraperData.observe(this, Observer {
-            if (it?.todaysEvents?.size ?: 0 <= 2) {
+            if (it?.todaysEvents?.size ?: 0 <= 2
+                && resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) {
 
 
                 single_fragment_activity_container.layoutParams = LinearLayout.LayoutParams(
