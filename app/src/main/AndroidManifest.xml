@@ -25,6 +25,7 @@
         </activity>
         <activity android:name=".ui.MainMenuActivity">
         </activity>
+        <activity android:name=".ui.SingleFragmentActivity"></activity>
     </application>
 
 </manifest>

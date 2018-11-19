@@ -14,21 +14,21 @@ import android.widget.LinearLayout
 import com.dalthed.tucanmobilerefresh.R
 import com.dalthed.tucanmobilerefresh.scraper.MainMenuScraper
 import com.dalthed.tucanmobilerefresh.utils.CredentialStore
+import com.dalthed.tucanmobilerefresh.utils.NavigationViewHelper
 import kotlinx.android.synthetic.main.activity_main_menu.*
+
 
 
 class MainMenuActivity : AppCompatActivity() {
 
-
+    private var navigationViewHelper: NavigationViewHelper? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main_menu)
         setSupportActionBar(toolbar)
+        navigationViewHelper = NavigationViewHelper(drawer_layout)
         val actionBar = supportActionBar
-        actionBar?.apply {
-            setDisplayHomeAsUpEnabled(true)
-            setHomeAsUpIndicator(R.drawable.ic_menu)
-        }
+        navigationViewHelper?.setupActionBar(actionBar)
 
 
         when (resources.configuration.orientation) {
@@ -82,21 +82,12 @@ class MainMenuActivity : AppCompatActivity() {
         }
 
 
-        nav_view.setNavigationItemSelectedListener { item: MenuItem ->
-            item.isChecked = true
-            drawer_layout.closeDrawers()
-            true
-        }
+
+        nav_view.setNavigationItemSelectedListener(navigationViewHelper)
 
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            android.R.id.home -> {
-                drawer_layout.openDrawer(GravityCompat.START)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
+        return navigationViewHelper?.onOptionsItemSelected(item) { super.onOptionsItemSelected(it) } ?: false
     }
 }

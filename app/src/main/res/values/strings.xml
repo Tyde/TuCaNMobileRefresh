@@ -10,10 +10,8 @@
 
     <string name="today_event_time">%1$s - %2$s</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="login_failed_unkown_reason">"An unknown error occurred (LOGIN_FAILED_UNKOWN_REASON). Please contact
-        the developer"
-    </string>
+
+    <string name="login_failed_unkown_reason">"An unknown error occurred (%1$s). Please contact the developer "</string>
     <string name="error_no_data_todays_events">Error - no data to show (ADAPTER_ERROR_TODAY_EVENTS)</string>
     <string name="nav_vv">Course catalogue</string>
     <string name="nav_course_timetable">Timetable</string>

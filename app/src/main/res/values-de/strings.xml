@@ -9,7 +9,7 @@
     <string name="login_no_internet">Keine Internetverbindung</string>
     <string name="today_event_time">%1$s - %2$s</string>
     <string name="error_no_data_todays_events">Fehler - Keine Daten zum Anzeigen (ADAPTER_ERROR_TODAY_EVENTS)</string>
-    <string name="login_failed_unkown_reason">Ein unbekannter Fehler ist aufgetreten (LOGIN_FAILED_UNKOWN_REASON).</string>
+    <string name="login_failed_unkown_reason">Ein unbekannter Fehler ist aufgetreten (%1$s).</string>
     <string name="nav_vv">Vorlesungsverzeichnis</string>
     <string name="nav_course_timetable">Studenplan</string>
     <string name="nav_my_events">Veranstaltungen</string>
