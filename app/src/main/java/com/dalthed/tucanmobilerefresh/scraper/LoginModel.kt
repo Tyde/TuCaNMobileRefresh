@@ -4,12 +4,13 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.util.Log
 import com.dalthed.tucanmobilerefresh.TuCanMobileRefresh
-import com.dalthed.tucanmobilerefresh.utils.CredentialStore
+import com.dalthed.tucanmobilerefresh.utils.ScraperUnsuccessfulException
 import okhttp3.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
 
+/*
 enum class LoginState {
     WAITING,
     LOGGING_IN,
@@ -18,29 +19,38 @@ enum class LoginState {
     LOGIN_FAILED_NO_INTERNET,
     LOGIN_FAILED_UNKNOWN_REASON
 }
+*/
+
+sealed class LoginState
+object LOGIN_WAITING : LoginState()
+object LOGIN_LOGGING_IN : LoginState()
+object LOGIN_SUCCESSFUL : LoginState()
+object LOGIN_FAILED_WRONG_CREDENTIALS : LoginState()
+object LOGIN_FAILED_NO_INTERNET : LoginState()
+data class LOGIN_FAILED_UNKNOWN_REASON(val exception: Exception) : LoginState()
 
 class LoginModel : ViewModel() {
     val client = OkHttpClient.Builder().cookieJar(TuCaNCookieJar()).addInterceptor(LoggingInterceptor()).build()
     /*val finalBody: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
     }*/
-    var sessionArgument:String? = null
+    var sessionArgument: String? = null
     val requestSteps: MutableLiveData<Int> by lazy {
         MutableLiveData<Int>()
     }
     val loginState: MutableLiveData<LoginState> by lazy {
         MutableLiveData<LoginState>()
     }
-    var customErrorMessage:String? = null
+
 
     init {
-        loginState.value = LoginState.WAITING
+        loginState.value = LOGIN_WAITING
     }
 
 
     fun doLogin(user: String, pass: String) {
         requestSteps.value = 0
-        loginState.value = LoginState.LOGGING_IN
+        loginState.value = LOGIN_LOGGING_IN
         val body = FormBody.Builder()
             .add("usrname", user)
             .add("pass", pass)
@@ -61,7 +71,7 @@ class LoginModel : ViewModel() {
         requestSteps.value = 1
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                loginState.postValue(LoginState.LOGIN_FAILED_NO_INTERNET)
+                loginState.postValue(LOGIN_FAILED_NO_INTERNET)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -79,7 +89,11 @@ class LoginModel : ViewModel() {
                 val url = splits[1].substring(1)
                 stageTwo(url)
             } else {
-                loginState.postValue(LoginState.LOGIN_FAILED_UNKNOWN_REASON)
+                loginState.postValue(
+                    LOGIN_FAILED_UNKNOWN_REASON(
+                        ScraperUnsuccessfulException("Refresh URL not found")
+                    )
+                )
             }
         } else {
             val body = response.body()?.string()
@@ -95,14 +109,18 @@ class LoginModel : ViewModel() {
                         val url = splits[1].substring(1)
                         stageTwo(url)
                     } else {
-                        loginState.postValue(LoginState.LOGIN_FAILED_UNKNOWN_REASON)
+                        loginState.postValue(
+                            LOGIN_FAILED_UNKNOWN_REASON(
+                                ScraperUnsuccessfulException("Refresh URL not found (Stage 2)")
+                            )
+                        )
                     }
                 } else {
                     val doc = Jsoup.parse(body)
                     val numInputUserName = doc.select("input[name=usrname]")?.size ?: 0
                     if (numInputUserName > 0) {
                         //wrong credentials
-                        loginState.postValue(LoginState.LOGIN_FAILED_WRONG_CREDENTIALS)
+                        loginState.postValue(LOGIN_FAILED_WRONG_CREDENTIALS)
                     } else {
                         //final Stage - start scraper
 
@@ -114,7 +132,9 @@ class LoginModel : ViewModel() {
 
                 }
             } else {
-                loginState.postValue(LoginState.LOGIN_FAILED_UNKNOWN_REASON)
+                loginState.postValue(LOGIN_FAILED_UNKNOWN_REASON(
+                    ScraperUnsuccessfulException("Empty body response from server")
+                ))
             }
         }
     }
@@ -125,12 +145,13 @@ class LoginModel : ViewModel() {
                     ?.getOrNull(1)?.split(",")?.getOrNull(0)
         val navigationData = getNavigationLinks(doc)
         if (navigationData == null) {
-            loginState.postValue(LoginState.LOGIN_FAILED_UNKNOWN_REASON)
-            customErrorMessage = "ERROR_UNABLE_TO_FIND_LINKS"
+            loginState.postValue(LOGIN_FAILED_UNKNOWN_REASON(
+                ScraperUnsuccessfulException("Unable to scrape links from TuCaN")
+            ))
         }
         TuCanMobileRefresh.navigationData = navigationData
         TuCanMobileRefresh.temporaryDocumentStore = doc
-        loginState.postValue(LoginState.LOGIN_SUCCESSFUL)
+        loginState.postValue(LOGIN_SUCCESSFUL)
     }
 
 
@@ -139,7 +160,7 @@ class LoginModel : ViewModel() {
         val request = Request.Builder().url(TuCanMobileRefresh.BASE_URL + url).get().build()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                loginState.postValue(LoginState.LOGIN_FAILED_NO_INTERNET)
+                loginState.postValue(LOGIN_FAILED_NO_INTERNET)
                 Log.e(TuCanMobileRefresh.LOG_TAG, e.toString())
             }
 
@@ -151,16 +172,16 @@ class LoginModel : ViewModel() {
     }
 
 
-    fun tryOldCookie(cookie: Cookie,argument:String) {
+    fun tryOldCookie(cookie: Cookie, argument: String) {
         (client.cookieJar() as TuCaNCookieJar).injectCookie(cookie)
-        loginState.postValue(LoginState.LOGGING_IN)
+        loginState.postValue(LOGIN_LOGGING_IN)
 
         val startpage =
             "${TuCanMobileRefresh.BASE_URL}scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=MLSSTART&ARGUMENTS=$argument,-N000019"
         val request = Request.Builder().url(startpage).get().build()
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                loginState.postValue(LoginState.LOGIN_FAILED_NO_INTERNET)
+                loginState.postValue(LOGIN_FAILED_NO_INTERNET)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -171,7 +192,7 @@ class LoginModel : ViewModel() {
                     //wrong credentials
                     sessionArgument = ""
                     Log.w(TuCanMobileRefresh.LOG_TAG, "Cookie no longer correct")
-                    loginState.postValue(LoginState.LOGIN_FAILED_WRONG_CREDENTIALS)
+                    loginState.postValue(LOGIN_FAILED_WRONG_CREDENTIALS)
                 } else {
                     sessionArgument = argument
                     Log.i(TuCanMobileRefresh.LOG_TAG, "Cookie correctm go on")
@@ -186,30 +207,41 @@ class LoginModel : ViewModel() {
 
     companion object {
 
-        fun getNavigationLinks(document:Document): NavigationData? {
+        fun getNavigationLinks(document: Document): NavigationData? {
 
-            val courseCalaogueLink =document.select("a.link000326")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+            val courseCalaogueLink = document.select("a.link000326")?.attr("href")?.let {
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val courseTimetableLink = document.select("a.link000271")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val courseTimetableWeekLink = document.select("a.link000270")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val messagesLink = document.select("a.link000299")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myModulesLink = document.select("a.link000275")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myCoursesLink = document.select("a.link000274")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myMajorsLink = document.select("a.link000307")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val courseRegistrationLink = document.select("a.link000311")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myExamsLink = document.select("a.link000318")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myExamResultsLink = document.select("a.link000323")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             val myPerformanceRecordLink = document.select("a.link000316")?.attr("href")?.let {
-                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it) }
+                HttpUrl.parse(TuCanMobileRefresh.BASE_URL_NSL + it)
+            }
             if (courseCalaogueLink != null
                 && courseTimetableLink != null
                 && courseTimetableWeekLink != null

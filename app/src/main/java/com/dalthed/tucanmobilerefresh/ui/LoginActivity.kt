@@ -13,9 +13,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import com.dalthed.tucanmobilerefresh.R
 import com.dalthed.tucanmobilerefresh.TuCanMobileRefresh
-import com.dalthed.tucanmobilerefresh.scraper.LoginModel
-import com.dalthed.tucanmobilerefresh.scraper.LoginState
-import com.dalthed.tucanmobilerefresh.scraper.TuCaNCookieJar
+import com.dalthed.tucanmobilerefresh.scraper.*
 import com.dalthed.tucanmobilerefresh.utils.CredentialStore
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -52,15 +50,15 @@ class LoginActivity : AppCompatActivity() {
 
         model?.loginState?.observe(this, Observer {
             when (it) {
-                LoginState.LOGGING_IN -> {
+                LOGIN_LOGGING_IN -> {
                     login_progress.visibility = View.VISIBLE
                     // show spinner
                 }
-                LoginState.WAITING -> {
+                LOGIN_WAITING -> {
                     login_progress.visibility = View.GONE
                     // do nothing
                 }
-                LoginState.LOGIN_SUCCESSFUL -> {
+                LOGIN_SUCCESSFUL -> {
                     login_progress.visibility = View.GONE
                     Log.i(TuCanMobileRefresh.LOG_TAG, "Logged in")
                     val tuIDStr = email.text.toString()
@@ -73,23 +71,23 @@ class LoginActivity : AppCompatActivity() {
                     //this.startAct
                     //switch to next activity
                 }
-                LoginState.LOGIN_FAILED_NO_INTERNET -> {
+                LOGIN_FAILED_NO_INTERNET -> {
                     login_progress.visibility = View.GONE
                     Snackbar.make(loginCoordinatorLayout, getString(R.string.login_no_internet), Snackbar.LENGTH_LONG)
                     // show no Internet error
                 }
-                LoginState.LOGIN_FAILED_WRONG_CREDENTIALS -> {
+                LOGIN_FAILED_WRONG_CREDENTIALS -> {
                     login_progress.visibility = View.GONE
                     Snackbar.make(loginCoordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG)
                         .show()
                     Log.i(TuCanMobileRefresh.LOG_TAG, "Wrong credentials")
                     // ask for new credentials
                 }
-                LoginState.LOGIN_FAILED_UNKNOWN_REASON -> {
+                is LOGIN_FAILED_UNKNOWN_REASON -> {
                     login_progress.visibility = View.GONE
                     Snackbar.make(
                         loginCoordinatorLayout,
-                        getString(R.string.login_failed_unkown_reason),
+                        getString(R.string.login_failed_unkown_reason,it.exception.message),
                         Snackbar.LENGTH_LONG
                     )
                         .show()

@@ -4,27 +4,22 @@ package com.dalthed.tucanmobilerefresh.ui
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.ListView
-import android.widget.ProgressBar
-import android.widget.TextView
+import android.widget.*
 import com.dalthed.tucanmobilerefresh.R
 import com.dalthed.tucanmobilerefresh.TuCanMobileRefresh
 import com.dalthed.tucanmobilerefresh.scraper.*
-import com.dalthed.tucanmobilerefresh.utils.CredentialStore
+import kotlinx.android.synthetic.main.activity_login.*
 import kotlinx.android.synthetic.main.fragment_today_events.*
-import okhttp3.HttpUrl
-import org.threeten.bp.LocalDateTime
 import org.threeten.bp.format.DateTimeFormatter
-
-
 
 
 class TodayEventsFragment : Fragment() {
@@ -43,12 +38,7 @@ class TodayEventsFragment : Fragment() {
         }
 
 
-
-
     }
-
-
-
 
 
     override fun onCreateView(
@@ -59,9 +49,12 @@ class TodayEventsFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_today_events, container, false)
 
         val tempListView = view.findViewById<ListView>(R.id.todayEventListView)
+
         Log.i(TuCanMobileRefresh.LOG_TAG, "append adapter")
         model?.let {
-            tempListView.adapter = TodayEventsListAdapter(this.context!!, it)
+            val adapter = TodayEventsListAdapter(this.context!!, it)
+            tempListView.adapter = adapter
+            tempListView.onItemClickListener = adapter
         }
 
 
@@ -72,10 +65,10 @@ class TodayEventsFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         model?.statusData?.observe(viewLifecycleOwner, Observer {
             when (it) {
-                ScraperState.LOADING -> {
+                SCRAPER_STATE_LOADING -> {
 
                 }
-                ScraperState.FINISHED -> {
+                SCRAPER_STATE_FINISHED -> {
                     Log.i(TuCanMobileRefresh.LOG_TAG, "Finished set")
                     /*
                     Log.i(TuCanMobileRefresh.LOG_TAG, "Finished set, injecting fake events")
@@ -84,6 +77,13 @@ class TodayEventsFragment : Fragment() {
                     val url = HttpUrl.Builder().host("www.tucan.tu-darmstadt.de").scheme("https").build()
                     model?.injectFakeEvent(SimpleCalendarEvent(now, then, "Was es halt zu tun gibt", url))
                     model?.injectFakeEvent(SimpleCalendarEvent(then, then.plusHours(2), "Noch was?", url))*/
+                }
+                is SCRAPER_STATE_ERROR -> {
+                    Snackbar.make(
+                        loginCoordinatorLayout,
+                        "Error: ${it.error.message}",
+                        Snackbar.LENGTH_LONG
+                    ).show()
                 }
 
             }
@@ -104,16 +104,31 @@ class TodayEventsFragment : Fragment() {
         })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i(TuCanMobileRefresh.LOG_TAG,"Destroy TEF")
-
-    }
 
 }
 
 
-class TodayEventsListAdapter(val context: Context, val dataModel: MainMenuScraper) : BaseAdapter() {
+class TodayEventsListAdapter(val context: Context, val dataModel: MainMenuScraper) : BaseAdapter(),
+    AdapterView.OnItemClickListener {
+    override fun onItemClick(adapterView: AdapterView<*>?, view: View?, posititon: Int, id: Long) {
+        val item = getItem(posititon)
+        val link = if (item is SimpleCalendarEvent) {
+            item.link
+        } else if (item is RoomCalendarEvent) {
+            item.simpleEvent.link
+        } else {
+            null
+        }
+        link.let {
+            val intent = Intent(context, SingleFragmentActivity::class.java).apply {
+                putExtras(SingleFragmentActivityMode.SINGLE_EVENT.toBundle())
+                putExtra(SingleFragmentActivity.URL_BUNDLE_KEY, it.toString())
+            }
+            context.startActivity(intent)
+        }
+
+    }
+
     val inflater = LayoutInflater.from(context)
     val df = TuCanMobileRefresh.simpleHourMinuteFormatter ?: DateTimeFormatter.BASIC_ISO_DATE
     var isExtendedDataSource = false
@@ -157,7 +172,10 @@ class TodayEventsListAdapter(val context: Context, val dataModel: MainMenuScrape
         return if (!isExtendedDataSource) {
             dataModel.scraperData.value?.todaysEvents?.getOrNull(position) ?: SimpleCalendarEvent.empty()
         } else {
-            dataModel.extendedCalendarData.value?.getOrNull(position) ?: RoomCalendarEvent(SimpleCalendarEvent.empty(),"")
+            dataModel.extendedCalendarData.value?.getOrNull(position) ?: RoomCalendarEvent(
+                SimpleCalendarEvent.empty(),
+                ""
+            )
         }
     }
 

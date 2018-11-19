@@ -9,7 +9,9 @@ import okhttp3.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
+import java.lang.Exception
 
+/*
 enum class ScraperState {
     LOADING,
     SCRAPING,
@@ -17,6 +19,14 @@ enum class ScraperState {
     CUSTOM_ERROR,
     FINISHED
 }
+*/
+sealed class ScraperState
+object SCRAPER_STATE_LOADING : ScraperState()
+object SCRAPER_STATE_SCRAPING : ScraperState()
+object SCRAPER_STATE_ERROR_NO_INTERNET : ScraperState()
+object SCRAPER_STATE_FINISHED : ScraperState()
+data class SCRAPER_STATE_ERROR(val error: Exception) :ScraperState()
+
 
 enum class DeepLoadingState {
     NOT_YET_STARTED,
@@ -27,7 +37,7 @@ enum class DeepLoadingState {
     FINISHED
 }
 
-abstract class BaseScraperModel<T>() : ViewModel() {
+abstract class BaseScraperModel<T> : ViewModel() {
     private val cookieJar = TuCaNCookieJar()
     protected val client = OkHttpClient.Builder().cookieJar(cookieJar).build()
     protected var document: Document? = null
@@ -54,21 +64,26 @@ abstract class BaseScraperModel<T>() : ViewModel() {
     /**
      * This function will do the asyncronous loading of the page
      */
-    fun loadPage(url: String) {
-        val request = Request.Builder().url(TuCanMobileRefresh.BASE_URL + url).get().build()
-        statusData.postValue(ScraperState.LOADING)
+    fun loadPage(url: String,baseIncluded:Boolean = false ) {
+        val urlToSend = if(baseIncluded) {
+            url
+        } else  {
+            TuCanMobileRefresh.BASE_URL + url
+        }
+        val request = Request.Builder().url(urlToSend).get().build()
+        statusData.postValue(SCRAPER_STATE_LOADING)
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                statusData.postValue(ScraperState.ERROR_NO_INTERNET)
+                statusData.postValue(SCRAPER_STATE_ERROR_NO_INTERNET)
             }
 
             override fun onResponse(call: Call, response: Response) {
-                statusData.postValue(ScraperState.SCRAPING)
+                statusData.postValue(SCRAPER_STATE_SCRAPING)
                 response.body()?.string()?.let {
                     val doc = Jsoup.parse(it)
                     document = doc
                     scrapeData(doc)
-                    statusData.postValue(ScraperState.FINISHED)
+                    statusData.postValue(SCRAPER_STATE_FINISHED)
                 }
             }
 
@@ -80,7 +95,7 @@ abstract class BaseScraperModel<T>() : ViewModel() {
         AsyncTask.execute {
             document = doc
             scrapeData(doc)
-            statusData.postValue(ScraperState.FINISHED)
+            statusData.postValue(SCRAPER_STATE_FINISHED)
         }
     }
 
